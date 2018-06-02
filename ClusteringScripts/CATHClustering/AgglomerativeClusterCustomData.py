@@ -65,7 +65,7 @@ for connectivity in (None, knn_graph):
             plt.title('linkage=%s (time %.2fs)' % (linkage, elapsed_time),
                       fontdict=dict(verticalalignment='top'))
 
-            plt.axis('on')
+            plt.axis('off')
 
             plt.subplots_adjust(bottom=0, top=.89, wspace=0,
                                 left=0, right=1)

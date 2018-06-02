@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import time as time
+from sklearn.preprocessing import scale
 from sklearn.cluster import KMeans
 from sklearn import metrics
 
@@ -40,6 +41,12 @@ for filename in os.listdir(path):
                         print(str(index)+": "+line) 
                     line = fp.readline()
         
+# #############################################################################
+# Pre-process data
+print(rmsd)
+#rmsd = scale(rmsd)
+print(rmsd)
+
 tmp = list(zip(rmsd, maxsub))        
 X = np.array(tmp)
 
@@ -58,10 +65,9 @@ print(labels)
 # Measure performance
 print("Silhouette Coefficient: %0.3f" % metrics.silhouette_score(X, labels))
 print("Calinski-Harabaz score: %0.3f" % metrics.calinski_harabaz_score(X, labels))
-
-metrics.adjusted_rand_score(labels_true, labels)  
-
+#print("ARS: %0.3f" % metrics.adjusted_rand_score(labels_true, labels) )
 # #############################################################################
+
 # Plot results
 colors = ["r.","g.","b.","y.","c.","m."]
 
@@ -76,3 +82,4 @@ plt.show()
 # Wrap up results
 elapsed_time = time.time() - st
 print("Elapsed time: %.2fs" % elapsed_time)
+print(X)
