@@ -2,46 +2,28 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import CATHUtilities as util
 
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.neighbors import kneighbors_graph
 
-path = "D:/Dados/tmscore_parsed_results/"
-structure1 = "140l.ent_"
+st = time.time()
 
-rmsd = []
-tmscore = []
-maxsub = []
+domain = "1c4zA02"
+measure1 = "RMSD"
+measure2 = "MaxSub"
 
-index = 0
+measure_data = util.readMeasureData(measure1,measure2,domain)
 
-for filename in os.listdir(path):
-    if structure1 in filename:
-        with open(path+filename) as fp: 
-                print(filename)
-                line = fp.readline()
-                index += 1   
-                while line:
-                    if "MaxSub" in line:
-                        for n in line.split():
-                            try:
-                                maxsub.append(float(n))
-                            except ValueError:
-                                pass
-                        print(str(index)+": "+line) 
-                    if "RMSD" in line:    
-                        for n in line.split():
-                            try:
-                                rmsd.append(float(n))
-                            except ValueError:
-                                pass
-                        print(str(index)+": "+line) 
-                    line = fp.readline()
-        
-tmp = list(zip(rmsd, maxsub))        
+cath_names = util.readCATHNames()
+
+data = util.intersectKeys(cath_names,measure_data)
+
+pdb_ids,cath_names,values1,values2,true_labels = util.splitCATHTuples(data)
+
+tmp = list(zip(values1, values2))        
 X = np.array(tmp)
 
-print(X)
 # Create a graph capturing local connectivity. Larger number of neighbors
 # will give more homogeneous clusters to the cost of computation
 # time. A very large number of neighbors gives more evenly distributed
@@ -65,7 +47,7 @@ for connectivity in (None, knn_graph):
             plt.title('linkage=%s (time %.2fs)' % (linkage, elapsed_time),
                       fontdict=dict(verticalalignment='top'))
 
-            plt.axis('off')
+            plt.axis('on')
 
             plt.subplots_adjust(bottom=0, top=.89, wspace=0,
                                 left=0, right=1)
