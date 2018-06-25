@@ -3,14 +3,15 @@ import numpy as np
 import datetime
 from sklearn import metrics
 from collections import OrderedDict
+import Config as cfg
 
 def getDate():
     date = datetime.datetime.now()
     return date
 
 def readMeasureData(measure1, measure2, structure):
-    print("Reading data V3: "+measure1+" "+measure2+" for "+structure)
-    path = "D:/Dados/cath/dompdb_tmscore_parsed/"
+    print("Reading data: "+measure1+" "+measure2+" for "+structure)
+    path = cfg.cath_alignments
     
     dic = {}
 
@@ -35,7 +36,7 @@ def readMeasureData(measure1, measure2, structure):
                                     pass
                         line = fp.readline()
     #print(dic)
-    print(len(dic))
+    #print(len(dic))
     return dic
 
 def readCATHNames():
@@ -62,7 +63,7 @@ def intersectKeys(cath_names, measure_data):
             data[pdb_id].append(measure_data[pdb_id][1])
             data[pdb_id].append(cath_names[pdb_id][0][0])
 
-    print(len(data))
+    #print(len(data))
     return data        
 
 def splitCATHTuples(data):
@@ -81,36 +82,64 @@ def splitCATHTuples(data):
 
     return pdb, cath, measure1, measure2, true_labels    
 
-def saveCATHResults(data, measure1, measure2):
-    date = str(getDate()).replace(':','.')
+def saveCATHResults(domain, algorithm, parameters, data, measure1, measure2, metrics):
+    #date = str(getDate()).replace(':','-')
 
     data2 = OrderedDict(sorted(data.items(), key=lambda x: x[0]))
 
-    with open('D:/Dados/'+date+'_test.txt', 'w') as file:
+    #path = 'D:/Dados/cath/clustering_results/'+domain+'_'+measure1+'_'+measure2+'/'
+    path = cfg.cath_results+domain+'/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    with open(path+domain+'_'+measure1+'_'+measure2+'_'+algorithm+'_'+str(parameters)+'.txt', 'w') as file:
         file.write('# ####################################################\n')
-        file.write('# Performance: \n')
-        file.write('Homogeneity: \n')
-        file.write('Completeness: \n')
-        file.write('V-measure: \n')
-        file.write('Adjusted Rand Index: \n')
-        file.write('Adjusted Mutual Information: \n')
-        file.write('Silhouette coefficient: \n')
+        file.write('Structure: '+domain+'\n')
+        file.write('\n')
         file.write('# ####################################################\n')
-        file.write('# pdb | cath | '+str(measure1).upper+' | '+str(measure2).upper+' | label | truth\n')
+        file.write('Algorithm: '+algorithm+'\n')
+        file.write('\n')
+        file.write('# ####################################################\n')
+        file.write('Parameters: '+str(parameters)+'\n')
+        file.write('\n')
+        file.write('# ####################################################\n')
+        file.write('Measures: '+measure1+' '+measure2+'\n')
+        file.write('\n')
+        file.write('# ####################################################\n')
+        file.write('# Cluster evaluation: \n')
+        file.write('Homogeneity: %0.3f \n' % metrics[0])
+        file.write('Completeness: %0.3f \n' % metrics[1])
+        file.write('V-measure: %0.3f \n' % metrics[2])
+        file.write('Adjusted Rand Index: %0.3f \n' % metrics[3])
+        file.write('Adjusted Mutual Information: %0.3f \n' % metrics[4])
+        file.write('Silhouette coefficient: %0.3f \n' % metrics[5])
+        file.write('\n')
+        file.write('# ####################################################\n')
+        file.write('# pdb | cath | '+measure1+' | '+measure2+' | label | truth\n')
         for value in data2.values():
             file.write('{}\n'.format(value))
 
 def clusterEvaluation(X, labels, labels_true):
+    values = []
     homogeneity = metrics.homogeneity_score(labels_true, labels)
     completeness = metrics.completeness_score(labels_true, labels)
     v_measure = metrics.v_measure_score(labels_true, labels)
     ari = metrics.adjusted_rand_score(labels_true, labels)
     ami = metrics.adjusted_mutual_info_score(labels_true, labels)
     silhouette = metrics.silhouette_score(X, labels, metric='sqeuclidean')
+    values.append(homogeneity)
+    values.append(completeness)
+    values.append(v_measure)
+    values.append(ari)
+    values.append(ami)
+    values.append(silhouette)
     print("Homogeneity: %0.3f" % homogeneity)
     print("Completeness: %0.3f" % completeness)
     print("V-measure: %0.3f" % v_measure)
     print("Adjusted Rand Index: %0.3f" % ari)
     print("Adjusted Mutual Information: %0.3f" % ami)
     print("Silhouette Coefficient: %0.3f" % silhouette)
+    return values
                 
+def saveImage(plot, path, name):
+    plot.savefig(path+name,bbox_inches='tight')
