@@ -1,14 +1,22 @@
-measures = ['RMSD','GDT-HA','GDT-TS','MaxSub','TM-score']
-#todo generate combinations
+import CATHUtilities as util
+import numpy as np
 
-structure = "1xfjA00"
+# #############################################
+# SETUP SECTION
+structure = ''
 #1xfjA00
 #1c4zA02
-algorithm_to_summarize = 'K-Means'
 
-measure1 = "MaxSub"
-measure2 = "GDT-TS-score"
+structure_to_summarize = "1c4zA02"
+algorithm_to_summarize = 'kmeans_4'
+
+#filled by Main
+measure1 = ''
+measure2 = ''
+
+cath_reference = "RMSD_RMSD"
 
 cath_files = ''
 cath_alignments = 'D:/Dados/cath/dompdb_tmscore_parsed/'
 cath_results = 'D:/Dados/cath/clustering_results/'
+# #############################################

@@ -4,26 +4,23 @@ import matplotlib as mpl
 import time as time
 from sklearn.cluster import DBSCAN
 import CATHUtilities as util
+import Config as cfg
 
-def dbscanFunc():
+def dbscanFunc(structure, measure1, measure2, values1, values2, data, true_labels):
 
-    st = time.time()
+    algorithm = 'dbs'
 
-    domain = "1c4zA02"
-    measure1 = "RMSD"
-    measure2 = "MaxSub"
-
-    measure_data = util.readMeasureData(measure1,measure2,domain)
-    cath_names = util.readCATHNames()
-    data = util.intersectKeys(cath_names,measure_data)
-    _,_,values1,values2,true_labels = util.splitCATHTuples(data)
+    path = cfg.cath_results
 
     tmp = list(zip(values1, values2))        
     X = np.array(tmp)
-
+                       
     # #############################################################################
     # Compute DBSCAN
-    db = DBSCAN(eps=0.4, min_samples=20).fit(X)
+    #0.6 1, 
+    eps = 0.6 
+    min_samples = 2
+    db = DBSCAN(eps=0.6, min_samples=2).fit(X)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
     labels = db.labels_
@@ -37,7 +34,7 @@ def dbscanFunc():
 
     # #############################################################################
     # Plot result
-
+        
     # Black removed and is used for noise instead.
     unique_labels = set(labels)
     colors = [plt.cm.Spectral(each)
@@ -48,7 +45,7 @@ def dbscanFunc():
             col = [0, 0, 0, 1]
 
         class_member_mask = (labels == k)
-
+        
         xy = X[class_member_mask & core_samples_mask]
         plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
                 markeredgecolor='k', markersize=5)
@@ -58,14 +55,11 @@ def dbscanFunc():
                 markeredgecolor='k', markersize=5)
 
     plt.title('Estimated number of clusters: %d' % n_clusters_)
-    plt.show()
+    #plt.show()
 
     # #############################################################################
     # Wrap up results
-    util.saveCATHResults(data, measure1, measure2, ce)
-
-    elapsed_time = time.time() - st
-    print("Elapsed time: %.2fs" % elapsed_time)
-
-
+    n = str(eps)+'_'+str(min_samples)
+    util.saveCATHResults(structure, algorithm, n, data, measure1, measure2, ce)
+    util.saveImage(plt, path+structure+'/', 'plot_'+structure+'_'+measure1+'_'+measure2+'_'+algorithm+'_'+str(n))
 

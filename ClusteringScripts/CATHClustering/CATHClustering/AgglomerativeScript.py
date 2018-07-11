@@ -3,55 +3,57 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import CATHUtilities as util
+import Config as cfg
 
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.neighbors import kneighbors_graph
 
-st = time.time()
+def agglo(structure, measure1, measure2, values1, values2, data, true_labels):
 
-domain = "1c4zA02"
-measure1 = "RMSD"
-measure2 = "MaxSub"
+    algorithm = 'agg'
 
-measure_data = util.readMeasureData(measure1,measure2,domain)
+    path = cfg.cath_results
 
-cath_names = util.readCATHNames()
+    tmp = list(zip(values1, values2))        
+    X = np.array(tmp)
 
-data = util.intersectKeys(cath_names,measure_data)
+    # Create a graph capturing local connectivity. Larger number of neighbors
+    # will give more homogeneous clusters to the cost of computation
+    # time. A very large number of neighbors gives more evenly distributed
+    # cluster sizes, but may not impose the local manifold structure of
+    # the data
+    knn_graph = kneighbors_graph(X, 10, include_self=False)
 
-pdb_ids,cath_names,values1,values2,true_labels = util.splitCATHTuples(data)
+    n_clusters = util.getClassificationsNumber(true_labels)
 
-tmp = list(zip(values1, values2))        
-X = np.array(tmp)
+    for connectivity in (None, knn_graph):
+        for linkage in ['average', 'complete', 'ward']:
+            try:
+                    #plt.subplot(1, 3, index + 1)
+                plt.xlabel(measure1)
+                plt.ylabel(measure2)
 
-# Create a graph capturing local connectivity. Larger number of neighbors
-# will give more homogeneous clusters to the cost of computation
-# time. A very large number of neighbors gives more evenly distributed
-# cluster sizes, but may not impose the local manifold structure of
-# the data
-knn_graph = kneighbors_graph(X, 10, include_self=False)
+                model = AgglomerativeClustering(linkage=linkage,
+                                                    connectivity=connectivity,
+                                                    n_clusters=n_clusters)
 
-for connectivity in (None, knn_graph):
-    for n_clusters in (10, 3):
-        plt.figure(figsize=(10, 4))
-        for index, linkage in enumerate(('average', 'complete', 'ward')):
-            plt.subplot(1, 3, index + 1)
-            model = AgglomerativeClustering(linkage=linkage,
-                                            connectivity=connectivity,
-                                            n_clusters=n_clusters)
-            t0 = time.time()
-            model.fit(X)
-            elapsed_time = time.time() - t0
-            plt.scatter(X[:, 0], X[:, 1], c=model.labels_,
-                        cmap='nipy_spectral')
-            plt.title('linkage=%s (time %.2fs)' % (linkage, elapsed_time),
-                      fontdict=dict(verticalalignment='top'))
+                model.fit(X)
+        
+                plt.scatter(X[:, 0], X[:, 1], c=model.labels_,
+                            cmap='jet',s=10)
 
-            plt.axis('on')
+                plt.axis('on')
 
-            plt.subplots_adjust(bottom=0, top=.89, wspace=0,
-                                left=0, right=1)
-            plt.suptitle('n_cluster=%i, connectivity=%r' %
-                         (n_clusters, connectivity is not None), size=17)
+                ce = util.clusterEvaluation(X,model.labels_,true_labels)
+                
+                n = linkage+'_'+str(n_clusters)
 
-plt.show()
+                plt.title("Agglomerative: "+linkage+' '+str(n_clusters))
+                print("Agglomerative: "+linkage+' '+str(n_clusters))
+                util.saveCATHResults(structure, algorithm, n, data, measure1, measure2, ce)
+                util.saveImage(plt, path+structure+'/', 'plot_'+structure+'_'+measure1+'_'+measure2+'_'+algorithm+'_'+str(n))
+            except Exception:
+                pass 
+
+
+    
