@@ -1,22 +1,22 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import time as time
-from sklearn.cluster import KMeans
-import CATHUtilities as util
-import Config as cfg
+import CASP12Utilities as util
 
-def kmeansFunc(structure, measure1, measure2, values1, values2, data, true_labels):
+from sklearn.cluster import KMeans
+
+def kmeansFunc(structure, measure1, measure2, values1, values2):
 
     algorithm = 'km'
     
-    path = 'D:/Dados/cath/clustering_results/'
+    path = "D:/Dados/casp12/clustering_results/"
 
     tmp = list(zip(values1, values2))        
     X = np.array(tmp)
 
     print(X)
 
-    for n in (3, 4, 5):
+    for n in (3, 4, 5, 6, 7, 8):
         try:
             # #############################################################################
             # Clustering
@@ -29,7 +29,7 @@ def kmeansFunc(structure, measure1, measure2, values1, values2, data, true_label
 
             # #############################################################################
             # Measure performance
-            ce = util.clusterEvaluation(X,labels,true_labels)
+            ce = util.clusterEvaluationNoLabels(X,labels)
 
             # Plot results
             colors = ["r.","g.","b.","y.","c.","m.","r.","g.","b.","y."]
@@ -46,7 +46,7 @@ def kmeansFunc(structure, measure1, measure2, values1, values2, data, true_label
 
             # #############################################################################
             # Wrap up results
-            util.saveCATHResults(structure, algorithm, n, data, measure1, measure2, ce)
+            util.saveCASPResults(structure, algorithm, n, measure1, measure2, ce)
             util.saveImage(plt, path+structure+'/', 'plot_'+structure+'_'+measure1+'_'+measure2+'_'+algorithm+'_'+str(n))
         except Exception:
             pass    

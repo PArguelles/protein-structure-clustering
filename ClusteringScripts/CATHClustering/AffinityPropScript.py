@@ -27,8 +27,10 @@ def affinityProp():
     tmp = list(zip(values1, values2))        
     X = np.array(tmp)
     # #############################################################################
-    # Compute Affinity Propagation
-    af = AffinityPropagation().fit(X)
+    # Compute Affinity Propagation 0.95 -200
+    damping = 0.95
+    preference = -200
+    af = AffinityPropagation(damping=.95,preference=-200).fit(X)
     cluster_centers_indices = af.cluster_centers_indices_
     labels = af.labels_
     n_clusters_ = len(cluster_centers_indices)
@@ -36,12 +38,9 @@ def affinityProp():
     # #############################################################################
     # Measure performance
     ce = util.clusterEvaluation(X,labels,true_labels)
-
+    
     # #############################################################################
     # Plot result
-    plt.close('all')
-    plt.figure(1)
-    plt.clf()
 
     colors = cycle('bgrcmykbgrcmykbgrcmykbgrcmyk')
     for k, col in zip(range(n_clusters_), colors):
@@ -55,9 +54,11 @@ def affinityProp():
 
     plt.title('Estimated number of clusters: %d' % n_clusters_)
 
+    #plt.show()
+
     # #############################################################################
     # Wrap up results
-    n = 'none'
+    n = str(damping)+'_'+str(preference)
     util.saveCATHResults(structure, algorithm, n, data, measure1, measure2, ce)
     util.saveImage(plt, path+structure+'/', 'plot_'+structure+'_'+cfg.measure1+'_'+cfg.measure2+'_'+algorithm+'_'+str(n))
     

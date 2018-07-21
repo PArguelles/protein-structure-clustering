@@ -2,21 +2,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time as time
 from sklearn.cluster import KMeans
-import CATHUtilities as util
+import SCOPUtilities as util
 import Config as cfg
 
 def kmeansFunc(structure, measure1, measure2, values1, values2, data, true_labels):
 
     algorithm = 'km'
     
-    path = 'D:/Dados/cath/clustering_results/'
+    print('test')
+
+    path = 'D:/Dados/scop/clustering_results/'
 
     tmp = list(zip(values1, values2))        
     X = np.array(tmp)
 
-    print(X)
-
-    for n in (3, 4, 5):
+    for n in (3, 20):
         try:
             # #############################################################################
             # Clustering

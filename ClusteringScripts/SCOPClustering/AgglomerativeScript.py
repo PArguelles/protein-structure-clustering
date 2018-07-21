@@ -2,7 +2,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import CATHUtilities as util
+import SCOPUtilities as util
 import Config as cfg
 
 from sklearn.cluster import AgglomerativeClustering
@@ -12,7 +12,7 @@ def agglo(structure, measure1, measure2, values1, values2, data, true_labels):
 
     algorithm = 'agg'
 
-    path = 'D:/Dados/cath/clustering_results/'
+    path = cfg.path_to_results
 
     tmp = list(zip(values1, values2))        
     X = np.array(tmp)
@@ -24,10 +24,10 @@ def agglo(structure, measure1, measure2, values1, values2, data, true_labels):
     # the data
     knn_graph = kneighbors_graph(X, 10, include_self=False)
 
-    n_clusters = util.getClassificationsNumber(true_labels)
+    n_clusters = 20
 
     for connectivity in (None, knn_graph):
-        for linkage in ['average']:#, 'complete', 'ward']:
+        for linkage in ['average','complete','ward']:
             try:
                     #plt.subplot(1, 3, index + 1)
                 plt.xlabel(measure1)

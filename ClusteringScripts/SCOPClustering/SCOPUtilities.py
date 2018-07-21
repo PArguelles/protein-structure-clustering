@@ -3,16 +3,13 @@ import numpy as np
 import datetime
 from sklearn import metrics
 import itertools 
-from collections import OrderedDict
 import Config as cfg
-
-def getDate():
-    date = datetime.datetime.now()
-    return date
+import random
+from collections import OrderedDict
 
 def readMeasureData(measure1, measure2, structure):
     print("Reading data: "+measure1+" "+measure2+" for "+structure)
-    path = cfg.cath_alignments
+    path = 'D:/Dados/scop/scop_tmscore_parsed/'
 
     measure1_values = []
     measure2_values = []
@@ -43,56 +40,75 @@ def readMeasureData(measure1, measure2, structure):
                         line = fp.readline()
 
     dic = {}
+
+    i = 0
+
     values = zip(measure1_values,measure2_values)
     dic = dict(itertools.zip_longest(structures, values))
 
-    return dic, measure1_values, measure2_values
+    dic = {k:v for k,v in dic.items() if v is not None}
+
+    dic2 = {}
+
+    while i < 1000:
+        key, values = random.choice(list(dic.items()))
+        dic2[key] = []
+        dic2[key].append(values[0])
+        dic2[key].append(values[1])
+
+        i += 1
+
+    dic2 = {k:v for k,v in dic2.items() if v is not None}
+
+    return dic2, measure1_values, measure2_values
 
 # read file with cath classifications and returns result as a dictionary
-def readCATHNames():
-    cath_names_path = "D:/Dados/cath/cath-classification-data/cath-names.txt"
+def readSCOPNames():
+    scop_names_path = "D:/Dados/scop/scope/dir.cla.scope.2.07-stable.txt"
     id_map = {}
 
-    with open(cath_names_path) as fp:
+    with open(scop_names_path) as fp:
         line = fp.readline()
         while line:
+            # class, fold, superfamiliy, family
             if '#' not in line:
-                id_map[str(line).split()[1]] = str(line).split()[0]
+                pdb_id = str(line).strip().split("\t")[1]
+                superfamily = str(line).strip().split("\t")[3].split('.')[2]
+                id_map[pdb_id] = superfamily
             line = fp.readline()   
-
+      
     return(id_map)
     
 # intersects the keys of both maps in order to extract entries which have
 # a CATH classification    
-def intersectKeys(cath_names, measure_data):
+def intersectSCOPKeys(scop_names, measure_data):
+
+    measure_data = {k:v for k,v in measure_data.items() if v is not None}
+    scop_names = {k:v for k,v in scop_names.items() if v is not None}
     data = {}
-    for pdb_id in cath_names.keys():
+    for pdb_id in scop_names.keys():
         if pdb_id in measure_data.keys():
             data[pdb_id] = []
             data[pdb_id].append(pdb_id)
-            data[pdb_id].append(cath_names[pdb_id])
+            data[pdb_id].append(scop_names[pdb_id])
             data[pdb_id].append(measure_data[pdb_id][0])
             data[pdb_id].append(measure_data[pdb_id][1])
-            data[pdb_id].append(cath_names[pdb_id][0][0])
-
+            
     return data        
 
-# splits the intersected dictionary into lists
-def splitCATHTuples(data):
+def splitSCOPTuples(data):
     pdb = []
-    cath = []
     measure1 = []
     measure2 = []
     true_labels = []
 
     for pdb_id in data.keys():
         pdb.append(data[pdb_id][0])
-        cath.append(data[pdb_id][1])
         measure1.append(data[pdb_id][2])
         measure2.append(data[pdb_id][3])
-        true_labels.append(str(data[pdb_id][1].split('.')[3]))   
-
-    return pdb, cath, measure1, measure2, true_labels    
+        true_labels.append(data[pdb_id][1])   
+        
+    return pdb, measure1, measure2, true_labels    
 
 def getClassificationsNumber(true_labels):
     unique_labels = set(true_labels)
@@ -104,7 +120,7 @@ def saveCATHResults(structure, algorithm, parameters, data, measure1, measure2, 
     data2 = OrderedDict(sorted(data.items(), key=lambda x: x[0]))
 
     #path = 'D:/Dados/cath/clustering_results/'+structure+'_'+measure1+'_'+measure2+'/'
-    path = cfg.cath_results+structure+'/'
+    path = 'D:/Dados/scop/clustering_results/'+structure+'/'
     if not os.path.exists(path):
         os.makedirs(path)
 

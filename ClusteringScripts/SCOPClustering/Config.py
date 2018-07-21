@@ -1,5 +1,4 @@
-import CATHUtilities as util
-import numpy as np
+
 
 # #############################################
 # SETUP SECTION
@@ -20,5 +19,5 @@ cath_files = ''
 #cath_alignments = 'D:/Dados/cath/dompdb_tmscore_parsed/'
 #cath_results = 'D:/Dados/cath/clustering_results/'
 # #############################################
-cath_alignments = 'D:/Dados/cath/dompdb_tmscore_parsed/'
-cath_results = 'D:/Dados/cath/clustering_results/'
+path_to_alignments = 'D:/Dados/scop/scop_tmscore_parsed/'
+path_to_results = 'D:/Dados/scop/clustering_results/'
